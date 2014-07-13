@@ -1,0 +1,51 @@
+1) Create a new folder called checkpointing. In this folder place a q script that simply defines 2 tables: t1 and t2, with a few columns of different datatypes each
+1) Look at tables.q
+
+2) Start a q session in this directory, asking it to load all files in the directory, and insert some rows into t1 and t2.
+2) q tables.q
+
+3) Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+3) No. Because it was never saved down or reloaded
+
+4) Using the logging command line parameter load up q again and insert some rows into t1 and t2. Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+4) q tables -l.
+
+	do[1000;insert[`t1;(100?1;100?10f;100?10e)]]
+	do[1000;insert[`t2;(100?.z.t;100?{`$x} each .Q.a;100?.Q.a)]]
+
+   No. Because it wasn't sent through a handle so the logging didn't pick it up
+
+5) Using the logging command line parameter load up q again and insert some rows into t1 and t2, via the 0 handle - i.e as if from a client. Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+5) q tables -l
+
+	do[1000;0"insert[`t1;(100?1;100?10f;100?10e)]"]
+	do[1000;0"insert[`t2;(100?.z.t;100?{`$x} each .Q.a;100?.Q.a)]"]
+
+   Yes.
+
+6) Using the logging command line parameter load up q again and insert some rows into t1 and t2 from a second q session via IPC. Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+6) q tables -l -p 1234
+
+
+	FROM CLIENT
+
+	h:hopen `:localhost:1234
+	do[1000;h"insert[`t1;(100?1;100?10f;100?10e)]"]
+	do[1000;h"insert[`t2;(100?.z.t;100?{`$x} each .Q.a;100?.Q.a)]"]
+
+   Yes.
+
+7) Using the persisting logging command line parameter load up q again and insert some rows into t1 and t2. How does this process differ to 4-6? Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+7) q tables -L
+
+	do[1000;0"insert[`t1;(100?1;100?10f;100?10e)]"]
+	do[1000;0"insert[`t2;(100?.z.t;100?{`$x} each .Q.a;100?.Q.a)]"]
+
+   Yes but it takes longer as q writes to disc every update.
+
+8) Inspect the contents of the folder. What changes does the checkpointing command line parameter cause q to make?
+8) A file tables.log is generated
+
+9) From within q, create a checkpoint file.
+9) \l (This is known to cause q to crash with some versions of Vista and XP)
+

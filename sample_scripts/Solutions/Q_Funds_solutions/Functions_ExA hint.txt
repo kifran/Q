@@ -1,0 +1,25 @@
+/Question 1										/Question 10
+til												sum
+/Question 2										/Question 11
+avg												sums
+mavg											prds
+med												/Question 12
+/Question 3										mod
+wavg											div
+/Question 4										/Question 13
+dev												floor
+sqrt											/Question 14
+xexp											^
+/Question 5										ceiling
+deltas											fills
+next											/Question 15
+prev											null
+/Question 6										/Question 16
+max												distinct
+min												/Question 17
+/Question 7										cut
+abs												lower
+/Question 8
+signum
+/Question 9
+prd

@@ -1,0 +1,1 @@
+Not an exercise - although I suppose it could be used as one. 2 scripts to show how to apply `g# to the same db. They both have exactly the same effect but gcreate_naive.q uses more memory overheads.

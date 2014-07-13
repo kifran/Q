@@ -1,0 +1,34 @@
+1 - Problem is that the file 2009.01.02/quote/asize has only 99 entries whereas all other files in that directory have 100 entries.
+When database loaded, q doesn't hit an error until one tries to access this date.So you don't instantly know something is wrong. 
+
+2 possible solutions - 
+a. use set and get to add 1 more entry to the file 2009.01.02/quote/asize. Probably a null but colud be any number you want.
+b. use set and get to load in each of the other files in the directory and delete the last element from each file. 
+ 
+
+2 - added a folder called "2009.01.01 Backup" in the partition directory.
+q doesn't like this. Solution: Remove folder
+
+3 - deleted sym file. All syms show as enumeration values. Solution:
+Regenerate sym file.
+
+4 - There is a type problem with the file "bsize" from "quote" on 2009.01.04.It should contain ints but it instead contains strings. An error will occur if we attempt arithmetic with this column. Eg: select bsize+asize from quote
+Solution: Use get and recast to int and set down again.
+
+5 - included a script with the main directory of the db which includes
+the "\\" command so that when loaded up q runs the script and exits.
+Solution: Remove "\\" from script
+
+6. Add a q script with an error in it. Filled the script with some simple arithmetic functions that call each other. b:{[x;y]:`x;x-a[y;x];} is the fault function - hidden a symbol return before the function does anything - hopefully they'll see the semi-colon and think "oh it's just returning a null" and then get increasingly frustrated when that doesn't fix it. Solution: Fix function or delete script.
+
+7. Have a flat file table at the top level with the same name as
+one of the tables in the partitions. Q reads the partitions first so the trade flat table is ignored. Solition: If you want the data in this flat table to be loaded with this database, rename it.
+
+8. Have a missing column in one of the partitions. 2009.01.03/quote has had the ask column renamed to ask_old - as if someone was fiddling with it and kept a backup. No problem observed until you attempt to view quotes for this date. Solution: rename to ask
+
+9. Have a table which doesn't exist in the first partition. Means table doesn't show up. Solution: Write down an empty trade table for 2009.01.01
+
+10. Similar to above, but make the first partition only have a subset of
+the columns. Trade in 2009.01.01 lacks a size column. . Solution: Write down an empty (nulls) size column (use set)
+
+11. Script redefines trade to be an empty table. Solution: Remove the offending line or script

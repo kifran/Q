@@ -1,0 +1,1 @@
+start q db_gen.q -dir mydb/ -perday 1000000 - startday 2009.01.01 -noday 10 -symlist VOD.L,BAR.L,BMW.DE,CITG.NY,BNPP.PA

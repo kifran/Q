@@ -1,0 +1,5 @@
+1. Modify loadlog.q to take the name of a log file from the command line and load it.  Print a success or failure message when the log has been loaded correctly.  Use this to load log file 1.
+2. Load log file 2.  What happens?
+3. Modify the script to trap any errors and print an error message to the screen.  
+4. Capture each "bad" log message into a variable, badmsgs.
+5. Modify the function to print a meaningful description of what the error encountered was.  Maybe the column lengths, types, are wrong, maybe tables don't exist. 

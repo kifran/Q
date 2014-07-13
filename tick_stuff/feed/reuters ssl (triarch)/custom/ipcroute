@@ -1,0 +1,3 @@
+triarch_sink.sinklib:host1:127.0.0.1
+triarch_sink.sinklib:host2:127.0.0.1
+triarch_sink.sinklib:host3:127.0.0.1

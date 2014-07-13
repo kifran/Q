@@ -1,0 +1,13 @@
+1) Create a folder "mypardb" containing 4 other folders. "mydbpar[0-3]" and "mydbparroot"
+
+2) In mydbparroot add a text document, "par.txt". Fill it with the appropriate data so that when q saves a table to this folder the data gets "round-robined" between the mydbpar[0-3] folders
+
+3) In the appropriate folder, write a script, table_gen.q that will generate a trade table (time(time),sym(symbol),price(float),size(int)) containing 1000000 random rows	
+
+4) Save trade to disc to several different date partitions, within the mydbparroot directory, to create a date-partitioned trade table
+
+5) Look through the mypardb folder structure and work out where each date has been saved. What has made this happen? When could this be used to boost the performance of q?
+
+6) Where has the sym file saved?
+
+7) Verify that the table can still be used by loading it up in another q session and running a sample query on it.

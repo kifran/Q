@@ -1,0 +1,18 @@
+1) Create a new folder checkpointing. In this folder place a q script that simply defines 2 tables: t1 and t2, with a few columns of different datatypes each
+
+2) Start a q session in this directory, asking it to load all files in the directory, and insert some rows into t1 and t2.
+
+3) Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+
+4) Using the logging command line parameter load up q again and insert some rows into t1 and t2. Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+
+5) Using the logging command line parameter load up q again and insert some rows into t1 and t2, via the 0 handle - i.e as if from a client. Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+
+6) Using the logging command line parameter load up q again and insert some rows into t1 and t2 from a second q session via IPC. Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+
+7) Using the persisting logging command line parameter load up q again and insert some rows into t1 and t2. How does this process differ to 4-6? Restart q and inspect t1 and t2. Has your data been persisted? If not, why not?
+
+8) Inspect the contents of the folder. What changes does the checkpointing command line parameter cause q to make?
+
+9) From within q, create a checkpoint file.
+

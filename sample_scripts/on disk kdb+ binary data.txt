@@ -1,0 +1,215 @@
+There are several advantages to saving our in memory data to disk in our native, kdb+ propriatary binary format
+as oppposed to text files:
+
+1. We do not have to dublicate the data as in memory lists of strings prior to saving the data to disk (therefore less memory intensive)
+2. Unlike text files, all the meta information about the data will be saved on disk - data types, foreign keys, enumerations, attributes, keys etc
+4. Loading the data back into memory is trivial and requires no data type casting (see reason 2)
+3. We can perform insert and upsert operations directly on the on disk tables. Note however we cannot do updates or deletes for on disk tables
+
+
+For an in memory unkeyed table, there are three options for saving the data to disk in kdb+ format:
+
+1. Single binary datafile
+2. Splayed table
+3. Partitioned table
+
+
+1. Single binary datafile
+
+The entire table (and all it's meta data) are saved to disk as a single binary file.
+
+eg:
+set[`:db/trade;select from trade]
+
+This command saves the trade table to a binary file called trade in the sub directory db
+
+When we save data to disk in this way, we must completely load the file back into physical memory before we can
+query the data. We can do this in 2 ways:
+
+A. tbl:get[`:db/trade]
+
+The get function loads the data file into memory and saves the results as the variable tbl
+
+B. Load in all single binary files sitting at the top level of db and run any q scripts at the top level
+of the directory by either:
+q db /kick off the q process and point it to the database directory
+or
+system"l db" /within a q process load in database directory
+\l db / same
+
+Given the fact that we completely load the table back into physical memory, this approach is only suitable for small 
+tables.
+
+If the in memory data object is something other than an unkeyed table (keyed table,list,disctionary etc), 
+then saving the object to disk as a single binary file is the only option available.
+
+2. Splayed table
+
+This technique is only applicable for unkeyed tables. This technique involves saving the table to disk
+not as a single file, but instead as a directory of files, one file per column as well as a file called .d. The resultant directory
+would have the same name as the table we want to query later.
+
+The .d file contains a list of column names as symbols in the same order as the columns from the original in memory table
+Each of the other files contains a simple homogenous list of atoms. For example, the price file contains all the prices, the
+time file contains all the times etc.
+
+The fact that each of the data files contains a one dimensional, homogenous list is highly significant. It means that
+we are able to memory map each file and randomly access the elements in the file. So if you only want to analyse the first
+five prices in a splayed trade table, q will memory map the price file and then load into physical memory just the first five prices. 
+All other files would be ignored for the purpose of this query.
+Q does NOT load the entire price file into memory and then disgard everything except the first five elements. It is
+much more memory efficent than that.
+
+If we wanted, we could load each of these files independently:
+col_names:get[`:db/trade/.d];
+times:get[`:db/trade/time];
+sizes:get[`:db/trade/size];
+
+However, typically we don't tend to do this. Typically we just start load in db and run qSQL queries directly against
+the on disk splayed table (as if it were an in memory table). The fact that qSQL select works for both in memory tables 
+as well as on disk splayed tables is highly convenient.
+
+We typically access the table by first loading in the db directory:
+q db /kick off the q process and point it to the database directory
+or
+system"l db" /within a q process load in database directory
+\l db / same
+
+q will recognise any splayed tables sitting in db and will treat them in the following way:
+
+1. Load the .d file into memory. Now q knows what the columns in the table are named.
+
+2. Load in the first few bytes from each of the associated files. Note - just the first few bytes, not ALL the bytes
+in the file are loaded. The first few bytes contain meta data like - datatypes, number of elements, attributes, foreign keys,
+enumerations etc. The actual data remains on disk until needed.
+
+Having analysed all splayed tables in db in this manner, the memory footprint of the process remains very small as we have not
+loaded in the actual data from these splayed tables.
+
+We are now able to query these tables using the standard qSQL select statement.
+Example 1:
+select price from trade where i=4
+
+When this query executes, q will memory map the price file and load into physical memory just the 5th price.
+Therefore the memory footprint from this query is miniscule.
+
+Example 2:
+select max price from trade where i<100
+
+When this query executes, q will memory map the price file and load into physical memory just the first 100 prices.
+Q will then aggregate this in memory list of 100 prices.
+
+Example 3:
+select max price from trade where sym=`IBM
+
+Let's assume the sym column on disk has no attributes associated with it (default behaviour).
+When this query executes, q will memory map the sym file and then load all it's contents into physical memory.
+Q then figures out the indices that correspond to `IBM. Q then maps the price file and applies the resultant row indices
+to the price file. The resultant prices are loaded into physical memory and aggregated.
+
+This memory efficent method of accesing tables means splaying is suitable for medium sized tables.
+As long as each individual column doesn't get too large, this approach is a good idea.
+
+The one catch is that an in memory table must have it's symbol columns replaced with enumerations prior to being saved to
+disk in splayed format. For example, if the in memory trade table has two columns sym and ex both of whom are of type
+symbol, then these columns must be replaced with enumerations (basically integers) prior to being saved to disk in splayed format.
+
+Enumeration of symbol columns:
+
+1st approach - manually enumerate symbol columns
+
+\l taq.q
+
+q)trade
+date       time         sym price    size ex
+--------------------------------------------
+2011.07.14 09:30:00.625 BOI 42.177   376  O
+2011.07.14 09:30:02.490 BOI 18.30203 59   L
+2011.07.14 09:30:03.640 RBS 95.65274 424  B
+2011.07.14 09:30:04.699 IBM 85.95423 241  N
+2011.07.14 09:30:17.882 VOD 40.50316 398  O
+..
+
+x:distinct raze value exec sym,ex from trade; /get a list of all distinct symbol data in trade table
+trade_enum:update sym:`x$sym,ex:`x$ex from trade; /replace sym and ex with enumerations against x
+
+set[`:db/trade/;trade_enum]; /save down table in splayed format
+set[`:db/x;x]; /save enumerations as a single binary file sitting at the top of db. This file will be loaded when db starts
+
+2nd approach - Use the high level function .Q.en to enumerate all symbol columns in the in memory table against
+a single binary file called sym at the top level of db
+
+This sym file contains a list of distinct symbols and will typically contain all distinct symbols across all
+columns of type symbol in all splayed and partitioned tables in db.
+
+e:.Q.en[`:db;trade]; /Replace symbol columns with enumerations against sym file. Append new symbols to sym file as appropriate
+set[`:db/trade/;e]; /Save enumerated table to disk in splayed format
+
+Once w eload up the database, we an still query these enumerated columns as if they were of type symbol, even though they
+actually are enumerations.
+
+eg:
+select from trade where sym=`IBM
+
+This query will work correclty.
+
+3. Partitioned table
+
+Saving a table to disk in partitioned format means that we split it up and save the sub tables as individual splayed
+tables, each in it's own directory (partition). This approach is suitable for large tables. For example, when the row count 
+gets high enough, having all historical prices in one price file becomes unwieldy. The memory footprint when constraining
+or aggregating a massive historical price file could become unattractive. For example, if we want to analyse yesterday's
+prices, we don't want to have to first filter out all prices that occured before yesterday. This type of problem is
+ideally solved using a date partitioned splayed table. This means the partitions are dates. Only those trades that
+took place on 2011.08.01 should be saved in the 2011.08.01 folder.
+
+Date partitioning is by far the most common type of partitioning. 
+
+In a date partitioned database, all splayed tables within the date folders will have a virtual date column
+prepended to the start of the schema in the resultant queries. This type of database is optimsed for users wishing to filter
+primarily on date. For example,
+
+select max price from trade where date=2011.08.01
+
+This type of query is ideally suited to a date partitioned trade table. When this query is run, q knows that only the 
+price file in the 2011/08.01/trade folder needs to be analysed.
+
+
+There are 3 other partioning options:
+
+1. month partitions 
+All trades that took place in 2011.07 are saved to the splayed trade table in the 2011.07 folder
+
+In a month partitioned database, all splayed tables within the month folders will have a virtual month column
+prepended to the start of the schema in resultant queries. This type of database is optimsed for users wishing to filter
+primarily on month. For example,
+
+select max price from trade where month=2011.07
+
+
+2. year partitions 
+All trades that took place in 2011 are saved to the splayed trade table in the 2011 folder
+
+In a year partitioned database, all splayed tables within the year folders will have a virtual year column
+prepended to the start of the schema in resultant queries. This type of database is optimsed for users wishing to filter
+primarily on year. For example,
+
+select max price from trade where year=2011
+
+
+3. int partitions 
+The folders are named 0,1,2,3 etc. The splayed trade table within the 0 folder perhaps contains all those trades that
+took place in 2011.08.01 for IBM. The architect designing the database decides what these integer partiions represent.
+
+In a int partitioned database, all splayed tables within the int folders will have a virtual int column
+prepended to the start of the schema in resultant queries.
+
+
+
+
+
+
+
+
+
+/

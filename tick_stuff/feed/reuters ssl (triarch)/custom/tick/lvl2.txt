@@ -1,0 +1,4 @@
+CSCO
+AAPL
+CTAS
+QCOM

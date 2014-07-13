@@ -1,0 +1,5 @@
+Each of the folders (broken[1-11]) contains the same 5-day trade and quote database.
+
+However, each taq database has been broken in a different way.
+
+Work out how each is broken and fix it

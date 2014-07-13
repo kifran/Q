@@ -1,0 +1,9 @@
+Load in taq.q and delete the outlying quotes from the quote table
+
+For the purpose of this execise, define an outlying quote as one where the spread (abs bid-ask)
+is greater than 1.5* (avg spread - dev spread) for the last 10 quotes
+
+Hint: Calculate the rolling deviation and the average of the spread for the last 10 quotes by stock
+
+Time: 20 mins
+

@@ -1,0 +1,4 @@
+C:/q_work/newyork_may2009/qDBA/q for DBAs Exercises/Partitioning_Example/mypardb/mydbpar0
+C:/q_work/newyork_may2009/qDBA/q for DBAs Exercises/Partitioning_Example/mypardb/mydbpar1
+C:/q_work/newyork_may2009/qDBA/q for DBAs Exercises/Partitioning_Example/mypardb/mydbpar2
+C:/q_work/newyork_may2009/qDBA/q for DBAs Exercises/Partitioning_Example/mypardb/mydbpar3

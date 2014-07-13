@@ -1,0 +1,38 @@
+1)
+The library will contain 2 simple functions: add (adds two parameters) and inc (increments with 1 the given parameter). All parameters are defined as integers.
+
+Create file sample.c:
+
+#define WIN32 1
+#include "k.h"
+
+K add(K a, K b) {
+	return ki(a->i+b->i);
+} 
+
+K inc(K a) {
+	return ki(a->i+1);
+}
+
+Create file sample.def (needed for windows only):
+
+EXPORTS add
+EXPORTS inc
+
+Create the dynamic library using the command:
+
+cl /LD sample.c sample.def q.lib
+
+The result file is sample.dll.
+
+Start a q session:
+c:\q>q
+KDB+ 2.4 2008.03.26 Copyright (C) 1993-2008 Kx Systems
+
+// Import defined functions from sample.dll into q
+q)add:`:sample 2:(`add;2)
+q)inc:`:sample 2:(`inc;1)
+q)add[2;5]
+7
+q)inc 5
+6

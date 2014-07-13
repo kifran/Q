@@ -1,0 +1,5 @@
+Load in taq.q and calculate the moving average price for the last N days by stock
+
+Then only select those trades whose price is less than the calculated moving average price
+
+Time: 20 mins

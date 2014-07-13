@@ -1,0 +1,96 @@
+Hi Ryan,
+
+There are a few typos in the Q for gods exercises and some questions I want to replace. Some of the questions are fine though.  Below is a roundup on the exercises, which ones I think you should/should not cover, where are are typos etc.
+
+It's important that you should only have the attendees attempt an exercise if you are comfortable with the exercise and solution. 
+
+I have a word doc version of the exercise solutions which I have attached. I copied the solutions into q scripts for your convenience. They are in the attached zip file. Below is my advice/pointers on the Q for gods exercises/solutions.
+
+
+IPC - 
+
+	You can do Exercise A if you like, it's very straightforward. Solution is on folder IPC Exercise A
+
+	Skip Exercise B, I don't like it and some of the behaviour it discusses is either depracated or else OS specific. 		Also I 	don't have the script it mentions called ExKill.q
+
+	Exercise C is a simpler version of IPC2.q and IPC3.q which you will be asking the attendees to do anyway so skip 		this one.
+
+Attributes -
+
+	solution script is att.q
+	You can do this exercise. The code at the start of the script is quite terse though. We can go through it if needed
+	
+
+Importing data -
+	You can do questions 1-2. Solution script is provided. I'd ignore questions 3 and 4 as you don't have Microsoft 	Access I believe.Most people don't care about intereacting with Access in my experience anyway.
+
+
+Advanced Web Interface -
+	I would totally skip over this exercise if I were you. Getting into the nitty gritty of .z.ph I don't think is 			worth the effort for almost all attendees.
+	Solution script is provided but take note, it is throwing an error for me when I try to run it.
+	
+q.k/q.q -
+	skip
+
+Q shortcuts -
+	skip
+
+Each Prior, Scan, Over - 
+	Cover, but make sure you are comfortable with these attributes and exercise first. Solution script provided.
+
+
+Joins lj/ij -
+	Same as Joins exercise A from Q Funds. I made a copy of Joins_ExA.q and called it Joins_lj_ij.q.
+	
+	typo in q4 - one too many values in exchange column.
+	
+	typo in q6 - drop one ":" from definition of tab0. Although this typo doesn't cause any error as it creates a view instead.
+	
+	q7 involves the use of a step function (`s#`Name xasc phoneNum). See my sample script step_function.q for more 	examples on step functions. The alternative way of solving this question is to use an aj. Joins_ExA.q uses both 	approaches.
+
+
+,’ (join each) -
+	easy, might as well do it. Solution present.
+
+
+Pivoting - 
+	I think this exercise is too difficult for attendees but we can go through it if you like.Partital Solution 	script provided
+
+
+Table Arithmetic - 
+	Definitely do these exercises. Not too difficult and common to Q Funds course. Solution file is provided.
+
+
+Bucketing - 
+	Do this exercise, it's not too difficult. Solution file provided.Only thing interesting is the use of the bin 		function from q11 down.
+	Let me know if you  want to go over this function. An alternative solution would be a step function (see 			step_function.q).
+	Take note of a couple fo typos. Point these out (and apologise on my behalf!) to the attendees before they 			attempt an exercise with any typos.
+	Typos: q13 - should say "Repeat question 12, not repeat question 2" 
+	q14 - should say "buckets as question 12, not buckets as question 1" 
+
+
+
+Correlation - 
+	Probably would'nt bother but up to you. solution provided.
+
+Functional/Dynamic Queries - 
+	You could have the attendees do the first few so they get an idea and some experience. Solution script provided but we are currently missing a script needed for quesitons 10 onwards. Not a problem if you cover the previous questions though. I'll try to find the script. 
+
+
+Advanced Language Interface - 
+	Probably not. Only if you are comfortable with the material and there is an interest from the attendees. Proablably
+	best to concentrate on Java where your experience lies. Solution provided.
+
+Importing Foreign Libraries - 
+	I believe you will be demonstrating your Visual Studio project so up to you. Solution provided
+
+Tables On Disk - 
+	Important area but unfortunatley we don't have the reffered file exDb.q currently. Let me see what I can do about that over the next few days. You won't be covering that topic until Wednesday.
+
+
+
+Logging and Checkpointing - 
+	No. You told mw this was a topic you hadn't eally done and these questions are pretty advanced.
+
+
+

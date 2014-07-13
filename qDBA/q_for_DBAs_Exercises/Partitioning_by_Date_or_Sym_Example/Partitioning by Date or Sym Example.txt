@@ -1,0 +1,20 @@
+1) Create a trade table containing date (date),sym (symbol),time (time),price (float),size (int) columns. The table should contain 1000000 rows perday, have 5 different syms and 5 different dates (aim to have data equally distributed between each - so roughly 40,000 entries per sym/date combination)
+
+2) Save this table to disc as a date partitioned table in the folder ds - sorted on sym, then time, and using "sym" as the field to apply `p# to
+
+3) Repeat 2 (use the folder dt this time) but this time sort on time, then sym, and apply `p# to "time"
+
+4) Save to disc as a partitioned table in the folder s. This time create partitions by sym and sort by date, then time, applying `p# to "date"
+
+5) Load up 3 separate q sessions: have one load ds, one load dt, and one load s. I.e. have the 3 different tables loaded side-by-side (just to make comparisons easier)
+
+6) Run some queries that use a where clause on date/time/sym (combinations of) on all 3 q sessions and observe how different partitioning affects the timing of the queries. Some simple examples would be:
+
+	"CHOOSE WHERE DATE=D,SYM=S"
+	"CHOOSE WHERE SYM=S,DATE=D"
+	"CHOOSE DATE,TIME,SYM"
+	"CHOOSE DATE,SYM,TIME"
+	"CHOOSE SYM,TIME,DATE"
+	"CHOOSE SYM,DATE,TIME"
+
+(NOTE: The example script provided occasionally seems to crash while running. This seems to be because windows can't write to disk quickly enough :(. Rerunning, without deleting the folders, will solve this problem)

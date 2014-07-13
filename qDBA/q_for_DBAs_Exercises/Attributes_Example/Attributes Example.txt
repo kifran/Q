@@ -1,0 +1,17 @@
+1) Create a random table, t. The table should have a sym (symbol), price (float), size (int) columns. 
+
+2) Let the table have n rows (a good choice for n is 9 million) of randomly generated data. For the sym's use "n?-4000?`3"
+
+3) Save the table as a splayed table
+
+4) Reload the q session so that the splayed table is now present
+
+5) From the table extract all records for a list of syms. Time this.
+
+6) Add a `g# attribute to the sym column
+
+7) Again, extract all records for one sym. How long does it take this time?
+
+8) Repeat for `s# attribute
+
+9) Repeat for `p# attribute

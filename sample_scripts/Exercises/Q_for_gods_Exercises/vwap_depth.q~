@@ -1,0 +1,28 @@
+// Build a simplified real time quote table containing bids and bid sizes at 5 levels of depth:
+/ q)meta quote
+/ c     | t f a
+/ ------| -----
+/ time  | t
+/ sym   | s
+/ bid1  | f
+/ bsize1| i
+/ bid2  | f
+/ bsize2| i
+/ bid3  | f
+/ bsize3| i
+/ bid4  | f
+/ bsize4| i
+/ bid5  | f
+/ bsize5| i
+
+quote:([]
+        time: `time$();
+        sym:  `$();
+        bids: `float$();
+        sizes:`int$()  
+ );
+
+quote[`time]: 1000?.z.T;
+quote[`sym] : 1000?`MS`GS`GOOG`EDF;
+depth:1000?5;
+quote[`bids]:{x?100} each depth;

@@ -1,0 +1,16 @@
+1. Define a table daily_returns with the following schema:
+
+c         | t f a
+----------| -----
+date      | d   s
+ticker    | s
+usd_return| f
+
+2. Populate this table with dummy daily returns for a portfolio of 12 stocks over the last 20,000 days.
+
+3. Without using the mdev function, calculate the deviation of the usd_return per stock over the last N days.
+
+For bonus marks, build your solution as a function such that one of inputs is a monadic aggregation function 
+(max,min,dev,var etc.) and the second input is N (number of days)
+
+Time: 45 mins

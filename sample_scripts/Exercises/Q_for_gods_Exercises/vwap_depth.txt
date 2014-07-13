@@ -1,0 +1,43 @@
+1. Build a simplified real time quote table containing bids and bid sizes at 5 levels of depth:
+q)meta quote
+c     | t f a
+------| -----
+time  | t
+sym   | s
+bid1  | f
+bsize1| i
+bid2  | f
+bsize2| i
+bid3  | f
+bsize3| i
+bid4  | f
+bsize4| i
+bid5  | f
+bsize5| i
+
+2. Populate this table with random data
+
+3. For a given trade size S, calculate the vwap to sell S units for each row in the table.
+
+For example, given the following quote:
+
+time         bid1 bsize1 bid2 bsize2 bid3 bsize3 bid4 bsize4 bid5 bsize5
+------------------------------------------------------------------------
+10:00:00.000 10   100    9    50     8    90     7    40     6    30
+
+If S=90 => vwap=10 (there was sufficient volume at the top of the book for the desired sell size)
+
+If S=140 => vwap = ((10*100)+(9*40))%140 = 9.7143 (We had to go as far as the 2nd level)
+
+If S=160 => vwap = ((10*100)+(9*50)+(8*10))%160 = 9.5625 (We had to go as far as the 3rd level)
+
+For sensible quote data, the larger S is, the smaller the vwap will be
+
+
+Time = 45 mins
+
+
+
+
+
+

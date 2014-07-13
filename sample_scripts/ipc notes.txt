@@ -1,0 +1,265 @@
+
+IPC (Inter Process Communication) is just TCP/IP under the surface
+
+
+In order for a client to connect and communicate to a server process, the server must first be listening on a port.
+By default, a q process is not listening on a port and thus can therefore not be connected to.
+We can set the port number either at start up or during the life of the server process
+eg: 
+q trade.q -p 5001 /server process loads taq.q and listens on port 5001
+q)\p 5001 /server process sets it's listening port to 5001
+q)system"p 5001" /same as previous
+
+Whenever a client connects to the server, a two way connection is established.
+The client can now send synchronous and assynchronous messages to the server 
+Likewise, the server can now send synchronous and assynchronous messages to the client 
+
+IPC is more peer to peer communication than true client server communication.
+
+A q client can connect to the server in one of the following ways:
+h1:hopen `:host:port /host name and port of q server process 
+h1:hopen `:IP:port /IP address and port of q server process 
+h1:hopen `::port /shortcut if both processes are on the same machine
+ 
+By default, the server has no username/password security and can then therefore be connected to by any process 
+on the network that knows the host/IP and port number of the server. 
+ 
+We can start the server process with username/password security so that a client (of any technology including
+web browsers) will need to supply a valid username/password combination when they try to connect. 
+eg:
+q trade.q -p 5001 -u file1.txt
+
+-u stands for username/password
+
+where file1.txt is a simple text file which lists out the usernames/passwords that will be associated 
+with the server process.
+
+Call this text file whatever you like and place it anywhere in the file system that the server process
+has read access to. A sample file would look like:
+
+nathan:dublin1
+lucy:cork2
+
+Based on this file, the only two users allowed to connect to the server are nathan and lucy with passwords 
+dublin1 and lucy2 respectively. 
+
+We are also able to encrypt the passwords in file1.txt using the md5 encryption function
+eg:
+q)md5"dublin1"
+0x70973bf13f087e6cf06664815befb7f4
+q)md5"cork2"
+0xd57e76319018252b7fe88b5fdab58b31
+ 
+So file1.txt would contain:
+
+nathan:70973bf13f087e6cf06664815befb7f4
+lucy:d57e76319018252b7fe88b5fdab58b31 
+
+If the server process has been started with security enabled, q clients connect as follows:
+ 
+h1:hopen `:host:port:username:password 
+h1:hopen `:IP:port:username:password
+h1:hopen `::port:username:password
+
+Note - if the passwords are encrypted,  the client still has to pass their unencrypted password.
+
+If the server has not been started off with security and if both client and server are on the same machine,
+then the client can connect as follows:
+
+h1:hopen port 
+
+The result of a successful invocation of hopen is an integer which we refer to as the IPC handle or simply handle
+for short.  In this case, h1 happens to have the value 384. The client applies their message to the handle to 
+send a synchronous message. The client applies their message to the negative of the handle to send an 
+asynchronous message
+
+
+When a client sends a synchronous message, they wait for the result to be returned. Typically we send get
+messages synchronously. For example, we would typically send a qSQL select statement synchronously.
+
+When a client sends an asynchronous message, they do not wait for a result from the server. An asynch message
+is a fire and forget type message. Typically we send set messages in an asynchronous way.  
+For example, we would typically send an insert message asynchronously.
+
+Examples of synch messages:
+/client side:
+
+res1:h1"select max price by sym from trade" /send the query string synchronously across the network to the server
+
+The result of this query is implicitely sent back to the client. The client then saves the resulant table as the 
+variable res1.
+
+The client can also tell the server to execute server side functions with inputs as follows:
+
+/client side:
+s1:`IBM;
+e1:`N;
+res2:h1("proc1";s1); /server executes its monadic stored procedure called proc1 with an input of `IBM
+res3:h1("proc2";`IBM`MSFT;e1); /server executes its dyadic stored procedure called proc2 with inputs of `IBM`MSFT and `N
+
+The client can also tell the server to execute functions defined on the client:
+
+/client side:
+f1:{[s]select max price from trade where sym=s}
+res4:h1(f1;s1)
+
+Examples of asynch messages:
+
+/client side:
+
+(neg h1)"insert[`trade;(.z.D;.z.T;`IBM;100f;100;`N)]"
+
+data:(.z.D;.z.T;`IBM;100f;100;`N)
+
+(neg h1)({[tbl;d]insert[tbl;d]};`trade;data)
+
+When a client sends a message via IPC, under the surface, q translates the message into a list of bytes using the 
+shortcut function -8!. This list of bytes is then broken up into packages which are sent consecutively across
+the network. The packages are recombined on the server and then trnaslated back into q code using the -9! function.
+
+For example, suppose the client wishes to send a simple select statement.
+
+q)x:-8!"select max price from trade"
+q)x
+0x01000000290000000a001b00000073656c656374206d61782070726963652066726f6d207472616465 /resultant list of bytes
+
+On the server side, the server applies -9! to this list of bytes to produce:
+
+q)-9!x
+"select max price from trade"
+
+This query is then passed implicitely to the value function and the result sent back to the client 
+(if the message was sent synch)
+
+In version 2.5 of q, .z.W was introduced. This is a dictionary where can we see our currently open connections.
+For example, if the client has connected only once to the one server process, then there would be just 
+one key/value pair in the dictionary.
+
+Although it is technically possible for a client to open multiple connections to the same server process, there is
+no benefit to doing this as a q process can only send one message at a time.
+
+If there are one of more messages waiting to be sent across the network using a handle, then in .z.W the value for 
+that handle will be populated with the number of bytes waiting to be sent in each message.
+
+For example:
+
+/client side:
+q).z.W
+384|
+
+This indicates that there is only one connection open and there are no bytes waiting to be sent via this connection.
+
+
+/client side:
+q)(neg 384)(set;`a;10000000?100);(neg 384)(set;`b;20000000?100);show .z.W;
+384| 40000042 80000042
+
+In the above code, the client sends two asynchronous messages. The first message tells the server to create a list
+called a containing ten million random integers.The second message tells the server to create a list
+called b containing twenty million random integers. Immediately after sending these two messages, the contents of .z.W
+are displayed. We see there are two messages waiting to be sent across the network via the handle 384.
+
+The values 40000042 and 80000042 makes sense if we examine the length of lists of ten million and twenty
+million integers converted into lists of bytes via -8!
+
+q)count -8!10000000?100
+40000014
+q)
+q)count -8!20000000?100
+80000014
+
+So the first message is 40000042 bytes long and the second message is 80000042 bytes long. The extra 28 bytes in each
+message contains information which includes the username and IP address of the client.
+
+On the server process, we can examine it's open connections:
+/server side:
+q).z.W
+368|
+
+So the server is currently only connected to one client via one handle.
+The server can now send messages to the client via the handle 368.
+eg:
+/server side:
+q)368"\\v" /get a list of variable names on the client
+,`h1
+
+If a process does not have any open connections, then .z.W will be empty.
+
+Either client or server can close the connection using the hclose function.
+For example, the client can close thier connection as follows:
+/client side:
+hclose h1
+
+This connection is now dead on both processes. On the server process, we can verify this by checking .z.W:
+/server side:
+q).z.W
+q)
+
+There are several variables defined within the .z namespace which be be useful in identifying clients.
+
+.z.a - IP address as a single integer (32 bit integer)
+x:vs[0x00;.z.a] - convert the IP address into a list of 4 bytes
+y:$[`int;x] - convert each of the 4 bytes into an integer (to display the IP address in the common format)
+
+.z.h - host name
+
+.z.u - username
+
+.z.i - Process Identification number (PID)
+
+.z.w - call back handle to the client (Note: lower case w)
+
+There are also a couple of related functions defined in the .Q namespace:
+
+.Q.host[.z.a] / this function takes an IP address as input and converts it into a corresponding host name
+
+.Q.addr[.z.h] / this function takes a host name as input and converts it into a corresponding IP address 
+
+As previously stated, when a client sends a message to a server, the list of bytes which gets sent across the network
+includes the username (.z.u) and IP address (.z.a) of the client. The variables .z.h and .z.i are not sent
+across the network.
+
+There are various IPC functions which have no definition by default but if they are defined, they become
+very important. For example:
+
+.z.po (port open)	input is the new server side handle to the client
+If this function is defined on the server process, it will automatically be executed whenever a client connects
+So for example, .z.po would execute if a client connects from q, c, c++, c# or java
+.z.po does not execute if a client connects from the web browser
+
+.z.pc (port close)	input is the old server side handle to the client
+If this function is defined on the server process, it will automatically be executed whenever the client has
+disconnected
+
+.z.pg (port get)	input is the message which the client sent synchronously
+If this function is defined on the server process, this function AND ONLY THIS FUNCTION will handle any incoming 
+synchronous message. By defining this function, the server will no longer blindly value any synch message it receives.
+
+.z.ps (port set)	input is the message which the client sent asynchronously
+If this function is defined on the server process, this function AND ONLY THIS FUNCTION will handle any incoming 
+asynchronous message. By defining this function, the server will no longer blindly value any asynch message it receives.
+
+.z.pw (password)	input is the seemingly valid username and password which the client supplied to hopen
+Define this function to do whatever ou like, but you need it return either 1b (keep connection up) or 0b (close connection)
+
+.z.ph (http)	input is a list of two elements. First element is the message the client sent from the web browser
+The second element is a dictionary containing http type information
+.z.ph is the only function in this set which has a definition by default
+
+It is by redefining these functions that we enable useful logging and security on kdb+ server processes.
+
+The scripts ipc1.q,ipc2.q,ipc3.q and ipc4.q scripts demonstrates how we can define the IPC handling functions to 
+achieve custom logging/security functionality.
+The scripts increase in complexity from ipc1 to ipc4.
+
+ipc1.q simply defines the IPC functions to log messages on the screen of the server process
+
+ipc2.q defines the IPC functions so that the server process maintains a table detailing the currently open connections
+on the server process 
+
+ipc3.q extends ipc2.q so that the server process also maintains a table listing details of all synch/asynch messages
+received by the server process
+
+ipc4.q creates security so that only two users (nathan and lucy )can connect and send the server messages.
+Furthermore, nathan can only invoke the stored procedures proc1 and proc2. lucy can only invoke the stored procedure proc1
+
